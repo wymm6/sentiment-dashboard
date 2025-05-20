@@ -1,51 +1,60 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
-# Configuration de la page
 st.set_page_config(page_title="Sentiment Myfxbook", layout="wide")
-st.title("📊 Sentiment des traders particuliers (Myfxbook)")
+st.title("📊 Sentiment Forex – Style Myfxbook")
 
-# Chargement du fichier CSV
 @st.cache_data
 def charger_donnees():
     return pd.read_csv("sentiment.csv")
 
 df = charger_donnees()
 
-# Ajout d'une colonne 'Signal'
-df["Signal"] = df.apply(
-    lambda row: "✅ Achat" if row["% Achat"] >= 70 else (
-        "❌ Vente" if row["% Vente"] >= 70 else "⚪️ Neutre"
+# Slider de filtrage
+seuil = st.slider("Afficher les actifs avec + de X% d'achat ou de vente", 0, 100, 0)
+df = df[(df["% Achat"] >= seuil) | (df["% Vente"] >= seuil)]
+
+# Trier les actifs par achat décroissant pour le visuel
+df = df.sort_values(by="% Achat", ascending=True)
+
+# Création du graphique style Myfxbook
+fig = go.Figure()
+
+fig.add_trace(go.Bar(
+    y=df["Actif"],
+    x=df["% Achat"],
+    name="Achat",
+    orientation='h',
+    marker=dict(color='green'),
+    hovertemplate="% Achat: %{x:.1f}%<extra></extra>"
+))
+
+fig.add_trace(go.Bar(
+    y=df["Actif"],
+    x=[-x for x in df["% Vente"]],
+    name="Vente",
+    orientation='h',
+    marker=dict(color='red'),
+    hovertemplate="% Vente: %{x:.1f}%<extra></extra>"
+))
+
+fig.update_layout(
+    barmode='relative',
+    title="💹 Sentiment des traders particuliers par actif",
+    xaxis=dict(
+        title="Pourcentage",
+        tickvals=[-100, -80, -60, -40, -20, 0, 20, 40, 60, 80, 100],
+        ticktext=["100% Vente", "80%", "60%", "40%", "20%", "0", "20%", "40%", "60%", "80%", "100% Achat"],
+        range=[-100, 100],
+        zeroline=True,
+        zerolinewidth=2,
+        zerolinecolor='black'
     ),
-    axis=1
+    yaxis=dict(title="Actif"),
+    bargap=0.2,
+    height=40 * len(df) + 100,
+    showlegend=True
 )
 
-# Affichage du tableau complet
-st.subheader("Données brutes avec indicateur de signal")
-st.dataframe(df, use_container_width=True)
-
-# Filtrage
-seuil = st.slider("Afficher les actifs avec plus de X% d'achat ou de vente", 0, 100, 70)
-df_filtré = df[(df["% Achat"] >= seuil) | (df["% Vente"] >= seuil)]
-
-st.subheader(f"🎯 Actifs filtrés (> {seuil}%)")
-st.dataframe(df_filtré.reset_index(drop=True), use_container_width=True)
-
-# === Graphique horizontal Achat vs Vente ===
-if not df_filtré.empty:
-    df_plot = df_filtré.sort_values(by="% Achat", ascending=True)
-
-    fig, ax = plt.subplots(figsize=(10, len(df_plot) * 0.5))
-
-    ax.barh(df_plot["Actif"], df_plot["% Achat"], label="% Achat", color='green')
-    ax.barh(df_plot["Actif"], -df_plot["% Vente"], label="% Vente", color='red')
-
-    ax.axvline(0, color="black", linewidth=0.5)
-    ax.set_xlabel("Pourcentage")
-    ax.set_title("Comparatif Achat vs Vente")
-    ax.legend(loc="upper right")
-
-    st.pyplot(fig)
-else:
-    st.info("Aucun actif ne correspond au filtre.")
+st.plotly_chart(fig, use_container_width=True)
