@@ -31,30 +31,24 @@ if onglet == "📊 Sentiment Forex":
     seuil = st.slider("Afficher les actifs avec plus de X% d'achat ou de vente", 0, 100, 0)
     df_filtré = df_filtré[(df_filtré["% Achat"] >= seuil) | (df_filtré["% Vente"] >= seuil)]
 
-    # Barre combinée compacte
-    def barre_combinee_compacte(achat, vente):
-        return f"""
-        <div style=\"width:100%; height:10px; display:flex; background-color:#e0e0e0; border-radius:3px; overflow:hidden; margin-bottom:4px;\">
-            <div style=\"width:{achat}%; background-color:#4caf50;\"></div>
-            <div style=\"width:{vente}%; background-color:#f44336;\"></div>
+    st.markdown("### 📈 Vue compacte des actifs")
+
+    for _, row in df_filtré.iterrows():
+        html = f"""
+        <div style="margin-bottom:8px;">
+            <strong>{row['Actif']}</strong>
+            <div style="width:100%; height:10px; display:flex; background-color:#e0e0e0; border-radius:3px; overflow:hidden; margin:4px 0;">
+                <div style="width:{row['% Achat']}%; background-color:#4caf50;"></div>
+                <div style="width:{row['% Vente']}%; background-color:#f44336;"></div>
+            </div>
+            <div style="font-size:12px; color:#555;">
+                <span style="color:green;">Achat : {row['% Achat']}%</span>
+                &nbsp;&nbsp;&nbsp;
+                <span style="color:red;">Vente : {row['% Vente']}%</span>
+            </div>
         </div>
         """
-
-    st.markdown(
-    f"""
-    <div style="margin-bottom:8px;">
-        <strong>{row['Actif']}</strong>
-        {barre_combinee_compacte(row['% Achat'], row['% Vente'])}
-        <div style="font-size:12px; color:#555;">
-            <span style="color:green;">Achat : {row['% Achat']}%</span>
-            &nbsp;&nbsp;&nbsp;
-            <span style="color:red;">Vente : {row['% Vente']}%</span>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
+        st.markdown(html, unsafe_allow_html=True)
 
 # === Onglet 2 : Rapport COT
 elif onglet == "📄 Rapport COT":
