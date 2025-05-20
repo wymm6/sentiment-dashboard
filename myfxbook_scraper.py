@@ -8,11 +8,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 import time
 
-# === Config Chrome
 options = Options()
-options.add_argument('--headless')  # Active si tu veux exécuter sans fenêtre
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
+options.add_argument("--headless")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
 
 # === Lancement du navigateur avec WebDriver Manager
 service = Service(ChromeDriverManager().install())

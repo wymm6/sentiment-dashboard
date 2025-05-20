@@ -3,3 +3,5 @@ pandas
 streamlit-aggrid
 matplotlib
 plotly
+selenium
+webdriver-manager

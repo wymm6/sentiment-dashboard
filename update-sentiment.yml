@@ -1,0 +1,40 @@
+name: Update sentiment.csv hourly
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Toutes les heures (UTC)
+  workflow_dispatch:     # Lancement manuel possible
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Cloner le repo
+      uses: actions/checkout@v3
+
+    - name: Installer Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Installer les dépendances
+      run: pip install -r requirements.txt
+
+    - name: Installer Google Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo apt install -y ./google-chrome-stable_current_amd64.deb
+
+    - name: Exécuter le scraper
+      run: python myfxbook_scraper.py
+
+    - name: Commit et push si changement
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add sentiment.csv
+        git commit -m "🔄 Mise à jour automatique du sentiment" || echo "Aucun changement"
+        git push
