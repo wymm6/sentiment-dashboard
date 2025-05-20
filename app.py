@@ -1,12 +1,11 @@
 import streamlit as st
 import pandas as pd
 
-
 st.set_page_config(page_title="Analyse de Marché", layout="wide")
-st.title("🧭 Tableau de bord marché – Forex & COT")
+st.title("🗭 Tableau de bord marché – Forex & COT")
 
 # === Navigation
-onglet = st.sidebar.radio("📂 Choisis une catégorie :", ["📊 Sentiment Forex", "📄 Rapport COT"])
+onglet = st.sidebar.radio("📂 Choisis une catégorie :", ["📊 Sentiment Forex", "📄 Rapport COT", "📈 Calculateur S&P500"])
 
 @st.cache_data
 def charger_donnees():
@@ -25,7 +24,7 @@ if onglet == "📊 Sentiment Forex":
     # Liste dynamique des actifs filtrés
     actifs_disponibles = df_filtré["Actif"].tolist()
     actifs_selectionnés = st.multiselect(
-        "🗂️ Sélectionne les actifs à afficher :",
+        "📂 Sélectionne les actifs à afficher :",
         options=actifs_disponibles,
         default=actifs_disponibles,
     )
@@ -57,9 +56,9 @@ elif onglet == "📄 Rapport COT":
     st.subheader("📄 Rapport COT – à venir")
     st.info("Cette section sera ajoutée prochainement.")
 
+# === Onglet Calculateur Google Sheet
 elif onglet == "📈 Calculateur S&P500":
     st.subheader("📈 Calculateur S&P500 (Google Sheet)")
 
     url = "https://docs.google.com/spreadsheets/d/1VNGBo3dYj06noVyK_5miTprbxDKwEbWTCFYPuHGdEfs/pubhtml"
     st.components.v1.iframe(url, height=600, scrolling=True)
-
