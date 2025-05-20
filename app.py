@@ -40,22 +40,21 @@ if onglet == "📊 Sentiment Forex":
         </div>
         """
 
-    st.markdown("### 📈 Vue compacte des actifs")
+    st.markdown(
+    f"""
+    <div style="margin-bottom:8px;">
+        <strong>{row['Actif']}</strong>
+        {barre_combinee_compacte(row['% Achat'], row['% Vente'])}
+        <div style="font-size:12px; color:#555;">
+            <span style="color:green;">Achat : {row['% Achat']}%</span>
+            &nbsp;&nbsp;&nbsp;
+            <span style="color:red;">Vente : {row['% Vente']}%</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-    for _, row in df_filtré.iterrows():
-        st.markdown(
-            f"""
-            <div style=\"margin-bottom:8px;\">
-                <strong>{row['Actif']}</strong>
-                {barre_combinee_compacte(row['% Achat'], row['% Vente'])}
-                <div style=\"font-size:12px; color:#555;\">
-                    <span style='color:green;'>Achat : {row['% Achat']}%</span> &nbsp;&nbsp;&nbsp;
-                    <span style='color:red;'>Vente : {row['% Vente']}%</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
 
 # === Onglet 2 : Rapport COT
 elif onglet == "📄 Rapport COT":
