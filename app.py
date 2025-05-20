@@ -1,45 +1,46 @@
-# app.py
 import streamlit as st
 import pandas as pd
 
 st.set_page_config(page_title="Analyse de Marché", layout="wide")
 st.title("🧭 Tableau de bord marché – Forex & COT")
 
-# === Navigation principale
+# === Navigation
 onglet = st.sidebar.radio("📂 Choisis une catégorie :", ["📊 Sentiment Forex", "📄 Rapport COT"])
 
 @st.cache_data
 def charger_donnees():
     return pd.read_csv("sentiment.csv")
 
-# === Onglet 1 : Sentiment Forex
+# === Onglet Sentiment Forex
 if onglet == "📊 Sentiment Forex":
-    st.subheader("📊 Sentiment Forex – Traders particuliers")
+    st.subheader("📊 Sentiment Forex – Vue compacte")
 
     df = charger_donnees()
 
-    # Sélecteur d'actifs
-    actifs_disponibles = df["Actif"].tolist()
+    # Filtrage par pourcentage
+    seuil = st.slider("Afficher les actifs avec plus de X% d'achat ou de vente", 0, 100, 70)
+    df_filtré = df[(df["% Achat"] >= seuil) | (df["% Vente"] >= seuil)]
+
+    # Liste dynamique des actifs filtrés
+    actifs_disponibles = df_filtré["Actif"].tolist()
     actifs_selectionnés = st.multiselect(
         "🗂️ Sélectionne les actifs à afficher :",
-        actifs_disponibles,
+        options=actifs_disponibles,
         default=actifs_disponibles,
     )
 
-    # Filtrage
-    df_filtré = df[df["Actif"].isin(actifs_selectionnés)]
-    seuil = st.slider("Afficher les actifs avec plus de X% d'achat ou de vente", 0, 100, 0)
-    df_filtré = df_filtré[(df_filtré["% Achat"] >= seuil) | (df_filtré["% Vente"] >= seuil)]
+    # Refiltrage selon sélection manuelle
+    df_affichage = df_filtré[df_filtré["Actif"].isin(actifs_selectionnés)]
 
-    st.markdown("### 📈 Vue compacte des actifs")
+    st.markdown("### 📈 Actifs avec barres combinées")
 
-    for _, row in df_filtré.iterrows():
+    for _, row in df_affichage.iterrows():
         html = f"""
         <div style="margin-bottom:8px;">
             <strong>{row['Actif']}</strong>
             <div style="width:100%; height:10px; display:flex; background-color:#e0e0e0; border-radius:3px; overflow:hidden; margin:4px 0;">
-                <div style="width:{row['% Achat']}%; background-color:#4caf50;"></div>
-                <div style="width:{row['% Vente']}%; background-color:#f44336;"></div>
+                <div style="width:{row['% Achat']}%; background-color:#2ecc71;"></div>
+                <div style="width:{row['% Vente']}%; background-color:#e74c3c;"></div>
             </div>
             <div style="font-size:12px; color:#555;">
                 <span style="color:green;">Achat : {row['% Achat']}%</span>
@@ -50,7 +51,7 @@ if onglet == "📊 Sentiment Forex":
         """
         st.markdown(html, unsafe_allow_html=True)
 
-# === Onglet 2 : Rapport COT
+# === Onglet COT
 elif onglet == "📄 Rapport COT":
-    st.subheader("📄 Rapport COT – Commitments of Traders")
+    st.subheader("📄 Rapport COT – à venir")
     st.info("Cette section sera ajoutée prochainement.")
