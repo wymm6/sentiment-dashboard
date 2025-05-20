@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
-st.set_page_config(page_title="Sentiment Myfxbook", layout="wide")
-st.title("📊 Sentiment Forex – Vue séparée Achat / Vente")
+st.set_page_config(page_title="Sentiment Forex combiné", layout="wide")
+st.title("📊 Sentiment Forex – Barre combinée (style Myfxbook)")
 
 @st.cache_data
 def charger_donnees():
@@ -11,41 +10,34 @@ def charger_donnees():
 
 df = charger_donnees()
 
-# Slider de filtrage
-seuil = st.slider("Afficher les actifs avec plus de X% d'achat ou de vente", 0, 100, 70)
+# === Sélecteur d'actifs
+actifs_disponibles = df["Actif"].tolist()
+actifs_selectionnés = st.multiselect("🗂️ Sélectionne les actifs à afficher :", actifs_disponibles, default=actifs_disponibles)
 
-# === Séparer Achat et Vente
-df_achat = df[df["% Achat"] >= seuil].sort_values(by="% Achat", ascending=True)
-df_vente = df[df["% Vente"] >= seuil].sort_values(by="% Vente", ascending=True)
+# === Filtrage
+df_filtré = df[df["Actif"].isin(actifs_selectionnés)]
 
-# === Graphique Achats
-if not df_achat.empty:
-    st.subheader("✅ Actifs dominés par l'achat")
-    fig_achat = px.bar(
-        df_achat,
-        x="% Achat",
-        y="Actif",
-        orientation="h",
-        color_discrete_sequence=["green"],
-        labels={"% Achat": "Pourcentage d'achat"},
-        title="Pourcentage d'achat par actif"
+# === Slider de filtre pour % min
+seuil = st.slider("Afficher les actifs avec un % achat ou vente supérieur à :", 0, 100, 0)
+df_filtré = df_filtré[(df_filtré["% Achat"] >= seuil) | (df_filtré["% Vente"] >= seuil)]
+
+# === Fonction pour afficher une barre combinée
+def barre_combinee(achat, vente):
+    return f"""
+    <div style="width:100%; height:18px; display:flex; background-color:#f0f0f0; border-radius:4px; overflow:hidden;">
+        <div style="width:{achat}%; background-color:green;"></div>
+        <div style="width:{vente}%; background-color:red;"></div>
+    </div>
+    """
+
+st.markdown("### 💹 Affichage combiné Achat / Vente")
+
+# === Affichage par ligne
+for _, row in df_filtré.iterrows():
+    st.markdown(f"**{row['Actif']}**", unsafe_allow_html=True)
+    st.markdown(barre_combinee(row["% Achat"], row["% Vente"]), unsafe_allow_html=True)
+    st.markdown(
+        f"<span style='color:green;'>Achat : {row['% Achat']}%</span> &nbsp;&nbsp;&nbsp;"
+        f"<span style='color:red;'>Vente : {row['% Vente']}%</span><hr>",
+        unsafe_allow_html=True
     )
-    st.plotly_chart(fig_achat, use_container_width=True)
-else:
-    st.info("Aucun actif avec un pourcentage d'achat supérieur au seuil.")
-
-# === Graphique Ventes
-if not df_vente.empty:
-    st.subheader("❌ Actifs dominés par la vente")
-    fig_vente = px.bar(
-        df_vente,
-        x="% Vente",
-        y="Actif",
-        orientation="h",
-        color_discrete_sequence=["red"],
-        labels={"% Vente": "Pourcentage de vente"},
-        title="Pourcentage de vente par actif"
-    )
-    st.plotly_chart(fig_vente, use_container_width=True)
-else:
-    st.info("Aucun actif avec un pourcentage de vente supérieur au seuil.")
