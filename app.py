@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import pandas as pd
 
@@ -27,6 +28,8 @@ if onglet == "📊 Sentiment Forex":
         "🗂️ Sélectionne les actifs à afficher :",
         options=actifs_disponibles,
         default=actifs_disponibles,
+        label_visibility="visible",
+        help="Seuls les actifs correspondant au filtre ci-dessus sont affichés"
     )
 
     # Refiltrage selon sélection manuelle
@@ -40,12 +43,12 @@ if onglet == "📊 Sentiment Forex":
             <strong>{row['Actif']}</strong>
             <div style="width:100%; height:10px; display:flex; background-color:#e0e0e0; border-radius:3px; overflow:hidden; margin:4px 0;">
                 <div style="width:{row['% Achat']}%; background-color:#2ecc71;"></div>
-                <div style="width:{row['% Vente']}%; background-color:#e74c3c;"></div>
+                <div style="width:{row['% Vente']}%; background-color:#27ae60;"></div>
             </div>
             <div style="font-size:12px; color:#555;">
                 <span style="color:green;">Achat : {row['% Achat']}%</span>
                 &nbsp;&nbsp;&nbsp;
-                <span style="color:red;">Vente : {row['% Vente']}%</span>
+                <span style="color:#27ae60;">Vente : {row['% Vente']}%</span>
             </div>
         </div>
         """
