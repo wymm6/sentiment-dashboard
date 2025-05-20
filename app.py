@@ -16,27 +16,9 @@ st.markdown("### 🔍 Données brutes")
 # Construction du tableau interactif stylé
 gb = GridOptionsBuilder.from_dataframe(df)
 
-# ✅ Icônes et couleur achat
-gb.configure_column(
-    "% Achat",
-    cellStyle=lambda params: {
-        "color": "green" if params.value >= 70 else "black",
-        "fontWeight": "bold"
-    },
-    type=["numericColumn", "numberColumnFilter", "customNumericFormat"],
-    valueFormatter="x.toFixed(1) + '% ✅'"
-)
+gb.configure_column("% Achat", type=["numericColumn"], cellStyle={"color": "green"})
+gb.configure_column("% Vente", type=["numericColumn"], cellStyle={"color": "red"})
 
-# ✅ Icônes et couleur vente
-gb.configure_column(
-    "% Vente",
-    cellStyle=lambda params: {
-        "color": "red" if params.value >= 70 else "black",
-        "fontWeight": "bold"
-    },
-    type=["numericColumn", "numberColumnFilter", "customNumericFormat"],
-    valueFormatter="x.toFixed(1) + '% ❌'"
-)
 
 gb.configure_default_column(editable=False, filter=True, sortable=True)
 
