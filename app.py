@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 st.set_page_config(page_title="Sentiment Myfxbook", layout="wide")
-
-st.title("📊 Sentiment des traders particuliers (Myfxbook)")
+st.title("📊 Sentiment des traders particuliers")
 
 @st.cache_data
 def charger_donnees():
@@ -11,14 +11,42 @@ def charger_donnees():
 
 df = charger_donnees()
 
-# Afficher le tableau complet
-st.subheader("Données brutes (29 actifs)")
-st.dataframe(df, use_container_width=True)
+st.markdown("### 🔍 Données brutes")
 
-# Slider pour filtrer
+# Construction du tableau interactif stylé
+gb = GridOptionsBuilder.from_dataframe(df)
+
+# ✅ Icônes et couleur achat
+gb.configure_column(
+    "% Achat",
+    cellStyle=lambda params: {
+        "color": "green" if params.value >= 70 else "black",
+        "fontWeight": "bold"
+    },
+    type=["numericColumn", "numberColumnFilter", "customNumericFormat"],
+    valueFormatter="x.toFixed(1) + '% ✅'"
+)
+
+# ✅ Icônes et couleur vente
+gb.configure_column(
+    "% Vente",
+    cellStyle=lambda params: {
+        "color": "red" if params.value >= 70 else "black",
+        "fontWeight": "bold"
+    },
+    type=["numericColumn", "numberColumnFilter", "customNumericFormat"],
+    valueFormatter="x.toFixed(1) + '% ❌'"
+)
+
+gb.configure_default_column(editable=False, filter=True, sortable=True)
+
+grid_options = gb.build()
+AgGrid(df, gridOptions=grid_options, use_container_width=True)
+
+# 🎯 Filtrage
+st.markdown("### 🎯 Filtrer les extrêmes")
 seuil = st.slider("Afficher les actifs avec plus de X% d'achat ou de vente", 0, 100, 70)
-
 df_filtré = df[(df["% Achat"] >= seuil) | (df["% Vente"] >= seuil)]
 
-st.subheader(f"🎯 Actifs filtrés (> {seuil}%)")
-st.dataframe(df_filtré.reset_index(drop=True), use_container_width=True)
+st.markdown(f"### ✅ Résultats filtrés (> {seuil}%)")
+AgGrid(df_filtré.reset_index(drop=True), gridOptions=gb.build(), use_container_width=True)
