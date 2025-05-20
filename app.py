@@ -56,3 +56,10 @@ if onglet == "📊 Sentiment Forex":
 elif onglet == "📄 Rapport COT":
     st.subheader("📄 Rapport COT – à venir")
     st.info("Cette section sera ajoutée prochainement.")
+
+elif onglet == "📈 Calculateur S&P500":
+    st.subheader("📈 Calculateur S&P500 (Google Sheet)")
+
+    url = "https://docs.google.com/spreadsheets/d/1VNGBo3dYj06noVyK_5miTprbxDKwEbWTCFYPuHGdEfs/pubhtml"
+    st.components.v1.iframe(url, height=600, scrolling=True)
+
