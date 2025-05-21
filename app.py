@@ -67,13 +67,44 @@ elif onglet == "🔗 Corrélations Forex":
 
     except Exception as e:
         st.error(f"❌ Erreur lors du chargement : {e}")
-
 # === Onglet Calendrier Économique
 elif onglet == "🗓️ Calendrier Économique":
-    st.subheader("🗓️ Calendrier Économique – Investing.com")
-    st.markdown("""
-<iframe src="https://sslecal2.investing.com?ecoDay=week&timezone=56&importance=3&currencies=5,6,7,8,9,10,17,24&columns=exc_currency,importance,event,time,actual,forecast,previous&features=datepicker,timezone,tabs&calType=week&lang=1"
-        width="100%" height="600" frameborder="0" allowfullscreen="true" marginwidth="0" marginheight="0" style="border:1px solid #ccc;"></iframe>
-""", unsafe_allow_html=True)
+    st.subheader("🗓️ Annonces économiques – Investing.com")
+
+    @st.cache_data
+    def charger_calendar():
+        df = pd.read_csv("investing_calendar.csv")
+        df["datetime"] = pd.to_datetime(df["datetime"])
+        df["date"] = df["datetime"].dt.date
+        return df
+
+    df_calendar = charger_calendar()
+
+    with st.sidebar:
+        st.markdown("## 🔍 Filtres calendrier")
+        date_selectionnée = st.date_input("📅 Date", value=pd.Timestamp.today())
+        devises = df_calendar["currency"].dropna().unique().tolist()
+        devises_selectionnées = st.multiselect("💱 Devise(s)", devises, default=devises)
+
+        niveaux_impact = df_calendar["impact"].dropna().unique().tolist()
+        impacts_selectionnés = st.multiselect("⚠️ Importance", niveaux_impact, default=niveaux_impact)
+
+    # Appliquer les filtres
+    df_filtré = df_calendar[
+        (df_calendar["date"] == pd.to_datetime(date_selectionnée).date()) &
+        (df_calendar["currency"].isin(devises_selectionnées)) &
+        (df_calendar["impact"].isin(impacts_selectionnés))
+    ]
+
+    if df_filtré.empty:
+        st.warning("Aucune annonce trouvée pour cette date ou ces filtres.")
+    else:
+        st.markdown("### 📋 Annonces du jour sélectionné")
+        st.dataframe(
+            df_filtré[["time", "currency", "event", "impact", "actual", "forecast", "previous"]]
+            .sort_values(by="time"),
+            use_container_width=True
+        )
+
 
 
