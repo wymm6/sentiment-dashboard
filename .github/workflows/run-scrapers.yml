@@ -1,0 +1,28 @@
+name: Run sentiment scrapers every hour
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Toutes les heures (UTC)
+  workflow_dispatch:     # Permet de le lancer manuellement aussi
+
+jobs:
+  run-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cloner le repo
+        uses: actions/checkout@v3
+
+      - name: Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Installer les dépendances
+        run: |
+          pip install -r requirements.txt
+
+      - name: Lancer les scripts
+        run: |
+          python3 corr_matrix_scraper_playwright.py && python3 myfxbook_scraper.py
+
