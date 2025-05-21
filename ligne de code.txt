@@ -1,0 +1,3 @@
+cd Documents/sentiment-dashboard
+python3 corr_matrix_scraper_playwright.py && python3 myfxbook_scraper.py && streamlit run app.py
+

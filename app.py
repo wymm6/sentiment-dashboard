@@ -1,11 +1,14 @@
 import streamlit as st
 import pandas as pd
+import yfinance as yf
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Analyse de Marché", layout="wide")
 st.title("🗭 Tableau de bord marché – Forex & COT")
 
 # === Navigation
-onglet = st.sidebar.radio("📂 Choisis une catégorie :", ["📊 Sentiment Forex", "📄 Rapport COT", "📈 Calculateur S&P500"])
+onglet = st.sidebar.radio("📂 Choisis une catégorie :", ["📊 Sentiment Forex", "📄 Rapport COT", "🔗 Corrélations Forex", "🗓️ Calendrier Économique"])
 
 @st.cache_data
 def charger_donnees():
@@ -17,11 +20,9 @@ if onglet == "📊 Sentiment Forex":
 
     df = charger_donnees()
 
-    # Filtrage par pourcentage
     seuil = st.slider("Afficher les actifs avec plus de X% d'achat ou de vente", 0, 100, 70)
     df_filtré = df[(df["% Achat"] >= seuil) | (df["% Vente"] >= seuil)]
 
-    # Liste dynamique des actifs filtrés
     actifs_disponibles = df_filtré["Actif"].tolist()
     actifs_selectionnés = st.multiselect(
         "📂 Sélectionne les actifs à afficher :",
@@ -29,7 +30,6 @@ if onglet == "📊 Sentiment Forex":
         default=actifs_disponibles,
     )
 
-    # Refiltrage selon sélection manuelle
     df_affichage = df_filtré[df_filtré["Actif"].isin(actifs_selectionnés)]
 
     st.markdown("### 📈 Actifs avec barres combinées")
@@ -51,14 +51,29 @@ if onglet == "📊 Sentiment Forex":
         """
         st.markdown(html, unsafe_allow_html=True)
 
-# === Onglet COT
-elif onglet == "📄 Rapport COT":
-    st.subheader("📄 Rapport COT – à venir")
-    st.info("Cette section sera ajoutée prochainement.")
+# === Onglet Rapport COT
+elif onglet == "🔗 Corrélations Forex":
+    st.subheader("🔗 Corrélation des paires Forex (via fichier CSV)")
 
-# === Onglet Calculateur Google Sheet
-elif onglet == "📈 Calculateur S&P500":
-    st.subheader("📈 Calculateur S&P500 (Google Sheet)")
+    try:
+        df_corr = pd.read_csv("correlation_matrix.csv", sep="\t", index_col=0)
 
-    url = "https://docs.google.com/spreadsheets/d/1VNGBo3dYj06noVyK_5miTprbxDKwEbWTCFYPuHGdEfs/pubhtml"
-    st.components.v1.iframe(url, height=600, scrolling=True)
+        # Remplacer les NaN par 0, arrondir et convertir en entier
+        df_clean = df_corr.fillna(0).round(0).astype(int)
+
+        st.markdown("### 📋 Tableau des corrélations (%) avec dégradé de couleur")
+        styled = df_clean.style.background_gradient(cmap="RdYlGn", axis=None).format("{:.0f}")
+        st.dataframe(styled)
+
+    except Exception as e:
+        st.error(f"❌ Erreur lors du chargement : {e}")
+
+# === Onglet Calendrier Économique
+elif onglet == "🗓️ Calendrier Économique":
+    st.subheader("🗓️ Calendrier Économique – Investing.com")
+    st.markdown("""
+<iframe src="https://sslecal2.investing.com?ecoDay=week&timezone=56&importance=3&currencies=5,6,7,8,9,10,17,24&columns=exc_currency,importance,event,time,actual,forecast,previous&features=datepicker,timezone,tabs&calType=week&lang=1"
+        width="100%" height="600" frameborder="0" allowfullscreen="true" marginwidth="0" marginheight="0" style="border:1px solid #ccc;"></iframe>
+""", unsafe_allow_html=True)
+
+
