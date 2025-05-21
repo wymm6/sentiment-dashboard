@@ -9,7 +9,7 @@ URL = "https://www.mataf.net/fr/tools/01-01-correlation"
 
 # === Lancement de Playwright (mode non headless pour contourner Cloudflare) ===
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False, slow_mo=50)
+    browser = p.chromium.launch(headless=True)
     page = browser.new_page(viewport={"width": 300, "height": 200})
 
 
