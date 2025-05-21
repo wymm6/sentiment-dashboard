@@ -9,12 +9,13 @@ URL = "https://www.mataf.net/fr/tools/01-01-correlation"
 
 # === Lancement de Playwright (mode non headless pour contourner Cloudflare) ===
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(headless=False, slow_mo=50)
     page = browser.new_page(viewport={"width": 300, "height": 200})
 
 
     print("🔄 Ouverture de la page...")
     page.goto(URL)
+    page.wait_for_load_state("networkidle")  # attend que tout ait chargé
 
     # Attendre que le tableau soit visible
     page.wait_for_selector("tr[data-inst1]", timeout=20000)
