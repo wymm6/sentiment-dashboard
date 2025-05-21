@@ -27,7 +27,8 @@ jobs:
         run: |
           python -m playwright install
 
-      - name: Lancer les scripts
+      - name: Installer xvfb et exécuter les scripts
         run: |
-          python3 corr_matrix_scraper_playwright.py && python3 myfxbook_scraper.py
-
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          xvfb-run python3 corr_matrix_scraper_playwright.py && python3 myfxbook_scraper.
